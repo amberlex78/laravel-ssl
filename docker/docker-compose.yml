@@ -1,0 +1,33 @@
+services:
+  nginx:
+    container_name: laravel-ssl-nginx
+    build:
+      context: ./nginx
+      args:
+        PUID: 1000
+        PGID: 1000
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ../front:/var/www/front
+      - ../admin:/var/www/admin
+      - ./nginx/cert:/etc/nginx/cert
+    depends_on:
+      - php-fpm
+    networks:
+      - laravel-ssl
+
+  php-fpm:
+    container_name: laravel-ssl-php-fpm
+    build:
+      context: ./php-fpm
+    volumes:
+      - ../front:/var/www/front
+      - ../admin:/var/www/admin
+    networks:
+      - laravel-ssl
+
+networks:
+  laravel-ssl:
+    driver: bridge
