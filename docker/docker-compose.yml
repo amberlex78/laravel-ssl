@@ -1,5 +1,5 @@
 services:
-  nginx:
+  laravel-ssl-nginx:
     container_name: laravel-ssl-nginx
     build:
       context: ./nginx
@@ -14,19 +14,41 @@ services:
       - ../admin:/var/www/admin
       - ./nginx/cert:/etc/nginx/cert
     depends_on:
-      - php-fpm
+      - laravel-ssl-php-fpm
     networks:
       - laravel-ssl
 
-  php-fpm:
+  laravel-ssl-php-fpm:
     container_name: laravel-ssl-php-fpm
     build:
       context: ./php-fpm
     volumes:
       - ../front:/var/www/front
       - ../admin:/var/www/admin
+    restart: unless-stopped
+    expose:
+      - 9000
+    depends_on:
+      - laravel-ssl-postgres
     networks:
       - laravel-ssl
+
+  laravel-ssl-postgres:
+    image: postgres:16-alpine
+    container_name:  laravel-ssl-postgres
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: postgres_db
+    volumes:
+      - laravel-ssl-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - laravel-ssl
+
+volumes:
+  laravel-ssl-postgres-data:
 
 networks:
   laravel-ssl:
